@@ -24,7 +24,7 @@ sub mkRefDataBase
 # index the reference
 sub indexReference
 {
-   my ($REFERENCE) = @_;
+   my $REFERENCE = @_[0];
    my $REF_INDEX = $REFERENCE.".fai";
 
    if(-e $REF_INDEX) {
