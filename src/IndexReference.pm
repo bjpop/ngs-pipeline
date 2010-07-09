@@ -13,9 +13,8 @@ sub mkRefDataBase
       print "Reference database already exists: using $REF_DATABASE\n";
    } 
    else {
-      my $COMM;
       print "Creating Reference Database\n";
-      $COMM = "bwa index @INDEX $REFERENCE";
+      my $COMM = "bwa index @INDEX $REFERENCE";
       print "$COMM\n";
       system($COMM);
    }
@@ -31,9 +30,8 @@ sub indexReference
       print "Reflist already exists: using $REF_INDEX\n";
    }
    else {
-      my $COMM;
       print "Creating Reflist\n";
-      $COMM = "samtools faidx $REFERENCE";
+      my $COMM = "samtools faidx $REFERENCE";
       print "$COMM\n";
       system($COMM);
    }
