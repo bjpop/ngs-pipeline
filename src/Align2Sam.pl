@@ -14,4 +14,4 @@ my $REFERENCE = shift @ARGV;
 my $ALIGNMENT = shift @ARGV;
 my @SAMFLAGS = ();
 
-Align::align2Sam(@SAMFLAGS, $REFERENCE, $ALIGNMENT);
+Align2Sam::align2Sam(@SAMFLAGS, $REFERENCE, $ALIGNMENT);
