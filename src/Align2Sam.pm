@@ -8,7 +8,6 @@ use File::Basename;
 sub align2Sam
 {
    my ($SAMFLAG, $REFERENCE, $SEQUENCE, $ALIGNMENT) = @_;
-   print "$ALIGNMENT";
    my ($name,$path,$suffix) = fileparse($ALIGNMENT, ".sai");
    my $SAMALIGN = $path.$name.".sam";
    my $COMM = "bwa $SAMFLAG $REFERENCE $ALIGNMENT $SEQUENCE > $SAMALIGN";
