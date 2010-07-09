@@ -1,3 +1,4 @@
+#!/opt/local/bin/perl
 use strict;
 use warnings;
 use Getopt::Std;
@@ -53,7 +54,6 @@ my $command;
 my $name;
 my $path;
 my $suffix;
-my $BAMALIGN;
 
 # grab the sequence files and make sure if using paired ends we have a matching sequence file
 if(defined $OPTIONS{p}) {
@@ -218,7 +218,7 @@ for $SEQIND (0..$#SEQFASTQ) {
 		print "$COMM\n";
 		system($COMM);
 
-		$SAMALIGN =~ s/\d\.(\w*)$/.$1/;
+		$SAMALIGN =~ s/[_\-\.]*\d(\.\w*)$/$1/;
 		$COMM = "bwa sampe @SAMPE $ALIGNMENT $PAIRED $SEQFASTQ[$SEQIND] $PEFASTQ[$SEQIND] > $SAMALIGN";
 		print "Alignment Finished\n\n";
 	} else {
