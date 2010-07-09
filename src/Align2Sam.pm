@@ -7,11 +7,11 @@ use File::Basename;
 # Convert alignment to SAM format. 
 sub align2Sam
 {
-   my (@SAMFLAGS, $REFERENCE, $ALIGNMENT) = @_;
+   my ($SAMFLAG, $REFERENCE, $SEQUENCE, $ALIGNMENT) = @_;
+   print "$ALIGNMENT";
    my ($name,$path,$suffix) = fileparse($ALIGNMENT, ".sai");
    my $SAMALIGN = $path.$name.".sam";
-   my $SEQUENCE = $path.$name.".fastq";		
-   my $COMM = "bwa @SAMFLAGS $REFERENCE $ALIGNMENT $SEQUENCE > $SAMALIGN";
+   my $COMM = "bwa $SAMFLAG $REFERENCE $ALIGNMENT $SEQUENCE > $SAMALIGN";
 
 
    print "Converting alignment to SAM format\n";

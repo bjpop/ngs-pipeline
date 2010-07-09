@@ -10,8 +10,7 @@ die qq(
 Usage:   Align2Sam.pl <ref.fa> <alignment.sai> 
 ) if(@ARGV < 2);
 
-my $REFERENCE = shift @ARGV;
-my $ALIGNMENT = shift @ARGV;
-my @SAMFLAGS = ();
+my ($REFERENCE, $SEQUENCE, $ALIGNMENT) = @ARGV;
+my $SAMFLAG = "samse";
 
-Align2Sam::align2Sam(@SAMFLAGS, $REFERENCE, $ALIGNMENT);
+Align2Sam::align2Sam($SAMFLAG, $REFERENCE, $SEQUENCE, $ALIGNMENT);
