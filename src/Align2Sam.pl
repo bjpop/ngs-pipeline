@@ -12,6 +12,6 @@ Usage:   Align2Sam.pl <ref.fa> <alignment.sai>
 
 my $REFERENCE = shift @ARGV;
 my $ALIGNMENT = shift @ARGV;
-my @SAMFLAGS = ()
+my @SAMFLAGS = ();
 
 Align::align2Sam(@SAMFLAGS, $REFERENCE, $ALIGNMENT);
