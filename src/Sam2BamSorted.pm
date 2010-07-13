@@ -12,7 +12,7 @@ sub sam2Bam
    my ($VIEWFLAG, $REFERENCE, $SAMFILE) = @_;
    my ($name,$path,$suffix) = fileparse($SAMFILE, ".sam");
    my $BAMALIGN = $path."Binary/".$name.".bam";
-   $COMM = "samtools view $VIEWFLAG -t $REFERENCE.fai -o $BAMALIGN $SAMFILE @VREGION";
+   my $COMM = "samtools view $VIEWFLAG -t $REFERENCE.fai -o $BAMALIGN $SAMFILE @VREGION";
 
    print "Converting to BAM\n";
    print "$COMM\n";
@@ -33,7 +33,7 @@ sub sortBam
    $SORTBAMALIGN =~ s/\.bam$/.sorted/;
 
    print "Sorting Bam alignments\n";
-   $COMM = "samtools sort @SORT $BAMALIGN $SAMALIGN";
+   my $COMM = "samtools sort @SORT $BAMALIGN $SORTBAMALIGN";
    print "$COMM\n";
    system($COMM);
 
