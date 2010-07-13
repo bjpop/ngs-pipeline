@@ -2,16 +2,17 @@ package MergeBams;
 
 use strict;
 use warnings;
-use File::Basename;
 
 sub mergeBams {
+
+   my $DIR = shift @_;
    my @BAMFILES = @_;
 
    if($#BAMFILES > 0)
    {
+      my $BAMALIGN = $DIR."Binary/all_reads_aligned.bam";
       print "Merging Bam files\n";
-      $BAMALIGN = $DIR."Binary/all_reads_aligned.bam";
-      $COMM = "samtools merge $BAMALIGN @BAMFILES";
+      my $COMM = "samtools merge $BAMALIGN @BAMFILES";
       print "$COMM\n";
       system($COMM);
       print "Bam files merged\n\n";
@@ -29,3 +30,5 @@ sub mergeBams {
 #      print "Merged Alignment Sorting Finished\n\n";
    }
 }
+
+1;
