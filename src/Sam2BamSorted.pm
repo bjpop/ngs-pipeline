@@ -5,6 +5,7 @@ use warnings;
 use File::Basename;
 
 # Convert SAM to BAM
+# Assumes the Binary directory has been created already.
 sub sam2Bam 
 {
    # XXX fix the VREGION argument
