@@ -7,6 +7,7 @@ use File::Basename;
 # Convert SAM to BAM
 sub sam2Bam 
 {
+   # XXX fix the VREGION argument
    my @VREGION = ();
    my ($VIEWFLAG, $REFERENCE, $SAMFILE) = @_;
    my ($name,$path,$suffix) = fileparse($SAMFILE, ".sam");
@@ -17,25 +18,32 @@ sub sam2Bam
    print "$COMM\n";
    system($COMM);
    print "BAM Conversion Finished\n\n";
+
+   $BAMALIGN;
 }
 
 # Sort a BAM file
 # XXX fixme
 sub sortBam
 {
-   # sort the alignments
-   print "Sorting Alignments\n";
-   $SORTBAMALIGN = $BAMALIGN;
+   # XXX fix the SORT argument
+   my @SORT = ();
+   my ($BAMALIGN) = @_;
+   my $SORTBAMALIGN = $BAMALIGN;
    $SORTBAMALIGN =~ s/\.bam$/.sorted/;
-   push @BAMALIGNSORTED, $SORTBAMALIGN.".bam";
-   my @TMP = @SORT;
-   push @TMP, $BAMALIGN;
-   push @TMP, $SORTBAMALIGN;
-   $COMM = "samtools sort @TMP";
+
+   print "Sorting Bam alignments\n";
+   $COMM = "samtools sort @SORT $BAMALIGN $SAMALIGN";
    print "$COMM\n";
    system($COMM);
-   unlink($BAMALIGN);
-   print "Alignment Sorting Finished\n\n";
+
+   # I think we should leave the decision to remove the BAM file to the
+   # caller of this function.
+   #unlink($BAMALIGN);
+
+   print "BAM alignment sorting finished\n\n";
+
+   $SORTBAMALIGN
 }
 
 
