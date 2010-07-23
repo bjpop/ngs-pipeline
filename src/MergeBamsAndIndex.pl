@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use MergeBams;
+use MergeBamsAndIndex;
 
 $| = 1;
 
@@ -12,4 +12,4 @@ Usage:   Sam2BamSorted.pl <dir> <alignment_1.bam> .. <alignment_n.bam>
 
 my $DIR = shift @ARGV;
 
-MergeBams::mergeBams($DIR, @ARGV);
+MergeBamsAndIndex::mergeBamsAndIndex($DIR, @ARGV);
