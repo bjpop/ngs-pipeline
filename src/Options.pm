@@ -3,7 +3,6 @@ package Options;
 use strict;
 use warnings;
 use Getopt::Std;
-use File::Basename;
 
 sub get_options {
 
@@ -34,5 +33,7 @@ OPTIONS: -a STR    algorithm to use for alignment [null]
       $OPTIONS{d} = "BWA";
    }
 
-   $OPTIONS
+   %OPTIONS;
 }
+
+1;
