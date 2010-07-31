@@ -8,6 +8,7 @@ use File::Basename;
 use IndexReference;
 use Options;
 use Illumina2Sanger;
+use Logger;
 
 $| = 1;
 
@@ -16,28 +17,8 @@ my %OPTIONS = Options::get_options();
 # pick reference file and sequences from command line arguments vector
 my ($REFERENCE, @SEQUENCES) = @ARGV;
 
-# variable initialisation
-#my @ALN = ("-t $OPTIONS{t}");
-#my @SAMSE = ();
-#my @SAMPE = ();
-#my @VIEW = ("-b");
-#my @VREGION = ();
-#my @SORT = ();
-#my @PILEUP = ("-c");
-#my @VARFILTER = ("-p", "-D $OPTIONS{D}");
-#my $ALG = $OPTIONS{a};
-
-# if log file specified
-# XXX should push this to its own module.
-if(defined $OPTIONS{l}) {
-   open (FH, ">$OPTIONS{l}");
-   close (FH);
-   # Open the log file and redirect output to it
-   open (STDERR, ">>$OPTIONS{l}");
-   open (STDOUT, ">>$OPTIONS{l}");
-   my $now = localtime time;
-   print "Log File Created $now\n";
-}
+# Open the log file and redirect stout to 
+Logger::init_logger($OPTIONS{"l"});
 
 # Step 1. Create reference database.
 my @INDEX_FLAGS = ("-a $OPTIONS{i}");
