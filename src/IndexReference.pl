@@ -16,7 +16,7 @@ OPTIONS: -i STR    Algorithm for constructing BWT index [$OPTIONS{i}]
 ) if(@ARGV < 1);
 
 my $REFERENCE = shift @ARGV;
-my @INDEX = ("-a $OPTIONS{i}"); 
+my $INDEX_FLAGS = "-a $OPTIONS{i}"; 
 
-IndexReference::mkRefDataBase($REFERENCE, @INDEX);
+IndexReference::mkRefDataBase($REFERENCE, $INDEX_FLAGS);
 IndexReference::indexReference($REFERENCE);

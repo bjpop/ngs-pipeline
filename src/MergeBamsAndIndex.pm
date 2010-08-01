@@ -5,20 +5,19 @@ use warnings;
 
 sub mergeBamsAndIndex {
 
-   my $DIR = shift @_;
-   my @BAMFILES = @_;
-   my $COMM;
+   my ($DIR, @BAMFILES) = @_;
    my $BAMALIGN = $DIR."Binary/all_reads_aligned.bam";
 
-   if($#BAMFILES > 0)
+   # If there is more than one BAM file then merge them.
+   if(@BAMFILES > 1)
    {
       print "Merging Bam files\n";
-      $COMM = "samtools merge $BAMALIGN @BAMFILES";
+      my $COMM = "samtools merge $BAMALIGN @BAMFILES";
       print "$COMM\n";
       system($COMM);
       print "Bam files merged\n\n";
    }
-   elsif ($#BAMFILES == 0)
+   elsif (@BAMFILES == 0)
    {
       $BAMALIGN = $BAMFILES[0];
    }
@@ -28,7 +27,7 @@ sub mergeBamsAndIndex {
    }
 
    print "Indexing Alignment File\n";
-   $COMM = "samtools index $BAMALIGN";
+   my $COMM = "samtools index $BAMALIGN";
    print "$COMM\n";
    system($COMM);
    print "Indexing Finished\n\n";

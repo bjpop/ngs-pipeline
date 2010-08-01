@@ -6,7 +6,7 @@ use warnings;
 # create reference database
 sub mkRefDataBase
 {
-   my ($REFERENCE, @INDEX) = @_;
+   my ($REFERENCE, $INDEX_FLAGS) = @_;
    my $REF_DATABASE = $REFERENCE.".bwt";
 
    if(-e $REF_DATABASE) {
@@ -14,7 +14,7 @@ sub mkRefDataBase
    } 
    else {
       print "Creating Reference Database\n";
-      my $COMM = "bwa index @INDEX $REFERENCE";
+      my $COMM = "bwa index $INDEX_FLAGS $REFERENCE";
       print "$COMM\n";
       system($COMM);
    }

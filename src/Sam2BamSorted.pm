@@ -44,8 +44,7 @@ sub sortBam
 
    print "BAM alignment sorting finished\n\n";
 
-   $SORTBAMALIGN
+   $SORTBAMALIGN;
 }
-
 
 1;
