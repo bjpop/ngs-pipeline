@@ -7,9 +7,10 @@ sub mergeBamsAndIndex {
 
    my ($DIR, @BAMFILES) = @_;
    my $BAMALIGN = $DIR."Binary/all_reads_aligned.bam";
+   my $num_bams = @BAMFILES;
 
    # If there is more than one BAM file then merge them.
-   if(@BAMFILES > 1)
+   if($num_bams > 1)
    {
       print "Merging Bam files\n";
       my $COMM = "samtools merge $BAMALIGN @BAMFILES";
@@ -17,7 +18,7 @@ sub mergeBamsAndIndex {
       system($COMM);
       print "Bam files merged\n\n";
    }
-   elsif (@BAMFILES == 0)
+   elsif ($num_bams == 1)
    {
       $BAMALIGN = $BAMFILES[0];
    }

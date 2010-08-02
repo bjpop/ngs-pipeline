@@ -19,18 +19,24 @@ sub convertManyFiles
 sub convertOneFile
 {
    my $ILL_FILE = $_[0];
-   my $SANGER_FILE = $ILL_FILE=~s/\.txt$/\.fastq/ ;
+   my $SANGER_FILE = $ILL_FILE;
 
    if(grep(/fastq$/, $ILL_FILE)) 
    {
       print "$ILL_FILE Already In Standard/Sanger FASTQ Format\n";
    } 
-   else
+   elsif(grep(/txt$/, $ILL_FILE))
    {
       my $COMM = "maq ill2sanger $ILL_FILE $SANGER_FILE\n";
       print "$COMM";
       system($COMM);
       print "$ILL_FILE Converted\n";
+
+      $SANGER_FILE=~s/\.txt$/\.fastq/ ;
+   }
+   else
+   {
+      die "sequence file not in illumina (.txt) or sanger (.fastq) format\n";
    }
    $SANGER_FILE;
 }

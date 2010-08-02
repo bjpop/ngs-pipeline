@@ -2,13 +2,15 @@ package OutputDir;
 
 use strict;
 use warnings;
+use File::Basename;
 
 # create output dirs
 sub mk_output_dir 
 {
-   ($SEQ, $OPTION_DIR) = @_;
+   my ($SEQ, $OPTION_DIR) = @_;
    # ($name,$path,$suffix) = fileparse($SEQ, ".fastq");
-   ($name,$path,$suffix) = fileparse($SEQ, (".fastq", ".txt"));
+
+   my ($name,$path,$suffix) = fileparse($SEQ, (".fastq", ".txt"));
    my $DIR = $path.$OPTION_DIR;
    unless(-d $DIR) 
    {

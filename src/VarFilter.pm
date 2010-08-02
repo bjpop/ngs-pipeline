@@ -6,13 +6,13 @@ use warnings;
 
 sub varFilter {
 
-   my ($VARFILTERFLAGS,$PILEUPFILE) = @_;
+   my ($VARFILTERFLAGS,$PILEUPFILE,$OUT_EXTENSION) = @_;
 
-   my $SNPSFILE = $PILEUPFILE."all.snps"
+   my $SNPSFILE = $PILEUPFILE.$OUT_EXTENSION;
 
    # run the variations filter
    print "Running Variations Filter\n";
-   $COMM = "samtools.pl varFilter $VARFILTERFLAGS $PILEUPFILE &> $SNPSFILE;
+   my $COMM = "samtools.pl varFilter $VARFILTERFLAGS $PILEUPFILE &> $SNPSFILE";
    print "$COMM\n";
    system($COMM);
 

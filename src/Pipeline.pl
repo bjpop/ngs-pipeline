@@ -12,7 +12,7 @@ use Align2Sam;
 use Sam2BamSorted;
 use MergeBamsAndIndex;
 use Pileup;
-use Varilter;
+use VarFilter;
 
 $| = 1;
 
@@ -23,7 +23,7 @@ my %OPTIONS = Options::get_options();
 my ($REFERENCE, @SEQUENCES) = @ARGV;
 
 # Open the log file and redirect output to it
-Logger::init_logger($OPTIONS{"l"});
+Logger::init_logger($OPTIONS{l});
 
 # Step 1. Create reference database.
 IndexReference::mkRefDataBase($REFERENCE, "-a $OPTIONS{i}");
@@ -32,7 +32,7 @@ IndexReference::mkRefDataBase($REFERENCE, "-a $OPTIONS{i}");
 IndexReference::indexReference($REFERENCE);
 
 # Create the output directory
-my $DIR = OutputDir::mk_output_dir($SEQUENCES[0]);
+my $DIR = OutputDir::mk_output_dir($SEQUENCES[0], $OPTIONS{d});
 
 my @SORTED_BAMS = ();
 foreach (@SEQUENCES)
@@ -41,7 +41,7 @@ foreach (@SEQUENCES)
    my $SEQ_FASTQ = Illumina2Sanger::convertOneFile($_);
 
    # Step 4. Align sequence to the reference database.
-   my $SEQ_ALIGN = Align::align($OPTIONS{"a"}, $OPTIONS{"t"}, $DIR, $REFERENCE, $SEQ_FASTQ);
+   my $SEQ_ALIGN = Align::align($OPTIONS{a}, $OPTIONS{t}, $DIR, $REFERENCE, $SEQ_FASTQ);
 
    # Step 5. Convert alignment to SAM format.
    my $SEQ_SAM = Align2Sam::align2Sam("samse", $REFERENCE, $_, $SEQ_ALIGN);
@@ -50,7 +50,7 @@ foreach (@SEQUENCES)
    my $SEQ_BAM = Sam2BamSorted::sam2Bam("-b", $REFERENCE, $SEQ_SAM);
 
    # Step 7. Sort the BAM file.
-   my $SEQ_BAM_SORTED = Sam2BamSorted:sortBam($SEQ_BAM);
+   my $SEQ_BAM_SORTED = Sam2BamSorted::sortBam($SEQ_BAM);
 
    push @SORTED_BAMS, $SEQ_BAM_SORTED;
 }
@@ -62,5 +62,5 @@ my $BAM_ALIGN = MergeBamsAndIndex::mergeBamsAndIndex($DIR, @SORTED_BAMS);
 my $PILEUP = Pileup::pileup($DIR, "-c", $REFERENCE, $BAM_ALIGN);
 
 # Step 12-13. Run variation filter.
-VarFilter::varfilter("-p -D $OPTIONS{D}", $PILEUP);
-VarFilter::varfilter("-D $OPTIONS{D}", $PILEUP);
+VarFilter::varFilter("-p -D $OPTIONS{D}", $PILEUP, ".all.snps");
+VarFilter::varFilter("-D $OPTIONS{D}", $PILEUP, ".snps");
