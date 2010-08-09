@@ -33,7 +33,7 @@ OPTIONS: -a STR    algorithm to use for alignment [null]
       $OPTIONS{d} = "BWA";
    }
 
-   %OPTIONS;
+   return %OPTIONS; 
 }
 
 1;

@@ -25,7 +25,7 @@ Timer::timer('Start of job');
 my %OPTIONS = Options::get_options();
 
 # Pick reference file and sequences from command line arguments vector.
-my ($REFERENCE, @SEQUENCES) = @ARGV;
+#my ($REFERENCE, @SEQUENCES) = @ARGV;
 
 # Open the log file and redirect output to it
 Logger::init_logger($OPTIONS{l});
