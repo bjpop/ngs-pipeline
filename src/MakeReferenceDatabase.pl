@@ -7,7 +7,8 @@ use Options;
 use Timer;
 
 # Process command line arguments. Remove any arguments from command line vector.
-my (%OPTIONS, $REFERENCE, @SEQUENCES) = Options::get_options();
+my %OPTIONS = Options::get_options();
+my ($REFERENCE, @SEQUENCES) = @ARGV;
 
 # Step 1. Create reference database.
 IndexReference::mkRefDataBase($REFERENCE, "-a $OPTIONS{i}");
