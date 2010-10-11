@@ -1,0 +1,17 @@
+bwa:
+   align: aln
+   index: bwtsw
+   threads: 8
+samtools:
+   maxReadDepth: 1000000
+logging:
+   file: pipeline.log
+   dir: log
+reference: /vlsci/VLSCI/bjpop/scratch/references/AllChromosomes.fa
+sequences:
+   - /vlsci/VLSCI/bjpop/scratch/sequences/large/09V05380_LID176_sequence.fastq
+   - /vlsci/VLSCI/bjpop/scratch/sequences/large/09V05380_LID177_sequence.fastq
+   - /vlsci/VLSCI/bjpop/scratch/sequences/large/09V05380_LID178_sequence.fastq
+pipeline:
+   style: run
+   procs: 1

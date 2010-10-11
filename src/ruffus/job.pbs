@@ -1,0 +1,9 @@
+#!/bin/bash
+#PBS -N sequential_pipeline
+#PBS -l walltime=20:00:00
+#PBS -l mem=24gb
+#PBS -q smp
+cd $PBS_O_WORKDIR
+module load python-gcc/2.6.4 samtools-gcc bwa-gcc
+export TMPDIR=/tmp
+python pipeline.py
