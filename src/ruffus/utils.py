@@ -32,13 +32,15 @@ def initLog(options):
                                                 "NGS_pipeline", loggerArgs)
     return { 'proxy': proxy, 'mutex': mutex }
 
-def runCommand(command, logger):
+def shellCommand(command):
     process = subprocess.Popen(command, stdout = subprocess.PIPE,
                                 stderr = subprocess.PIPE, shell = True)
     stdoutStr, stderrStr = process.communicate()
-    if process.returncode != 0:
-        #raise Exception("Failed to run '%s'\n%s%sNon-zero exit status %s" %
-        #                    (cmd_str, stdout_str, stderr_str, process.returncode))
+    return(stdoutStr, stderrStr, process.returncode)
+
+def runCommand(command, logger):
+    (stdoutStr, stderrStr, returncode) = shellCommand(command)
+    if returncode != 0:
         msg = ("Failed to run '%s'\n%s%sNon-zero exit status %s" %
                (command, stdoutStr, stderrStr, process.returncode))
         logInfo(msg, logger)
