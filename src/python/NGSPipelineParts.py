@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os.path as path
 import os
 import sys
@@ -9,6 +7,16 @@ import tempfile
 import logging as log
 import subprocess as proc
 import time
+import getopt
+
+
+################################################################################
+#
+# Default values.
+#
+################################################################################
+
+defaultOptionsFile = 'ngs_pipeline.opt'
 
 ################################################################################
 #
@@ -196,24 +204,51 @@ defaultConfig = {
    'dir' : 'BWA',
    'reference' : None,
    'sequences' : [],
-   'control': 'sequential'
+   'control' : 'sequential',
+   'optionsFile' : defaultOptionsFile 
 }
 
-defaultOptionsFile = 'ngs_pipeline.opt'
+def getCommandLineArgs():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "c:s:", ["config=", "sequence="])
+    except getopt.GetoptError, err:
+        print str(err)
+        #usage()
+        sys.exit(2)
+    optionsFile = defaultOptionsFile
+    sequenceFile = None
+    for o, a in opts:
+        if o in ("-c", "--config"):
+            optionsFile = a
+        elif o in ("-s", "--sequence"):
+            sequenceFile = a
+    return (optionsFile, sequenceFile)
+
+
+def validateOptions(options):
+    reference = options['reference']
+    if not reference:
+        fail('One reference file must be specified')
+    sequences = options['sequences']
+    if len(sequences) == 0:
+        fail('At least one sequence file must be specified')
+    return options
 
 def getOptions():
-    if len(sys.argv) <= 1:
-        filename = defaultOptionsFile
-    else:
-        filename = sys.argv[1]
+    (optionsFile, sequenceFile) = getCommandLineArgs()
     try:
-        file = open(filename)
+        file = open(optionsFile)
         contents = file.read()
     except IOError, e:
-        fail('Could not open configuration file: %s' % filename)
+        fail('Could not open configuration file: %s' % optionsFile)
     newConfig = yaml.load(contents)
-    updateDict(defaultConfig, newConfig)
-    return defaultConfig
+    theConfig = defaultConfig
+    updateDict(theConfig, newConfig)
+    updateDict(theConfig, { 'optionsFile' : optionsFile })
+    # override the sequence files from config file with the one from the command line
+    if sequenceFile:
+        updateDict(theConfig, { 'sequences' : [sequenceFile] })
+    return validateOptions(theConfig)
 
 def updateDict(old, new):
     for k in new:
@@ -259,7 +294,7 @@ def initLogger(options):
 #
 ################################################################################
 
-class Timer():
+class Timer(object):
    def __init__(self, msg):
        self.msg = msg
    def __enter__(self): self.start = time.time()
@@ -272,76 +307,29 @@ class Timer():
 #
 ################################################################################
 
-def referenceDatabase(options, reference):
-    mkRefDataBase(reference, '-a ' + options['bwa']['index'])
+
+def referenceDatabase(options):
+    reference = options['reference']
+    algorithm = options['bwa']['index']
+    mkRefDataBase(reference, '-a ' + algorithm)
     indexReference(reference)
 
-def seq2Bam(options, reference, seq, outputDir):
-    seqFastq = illumina2FastQ(seq)
-    seqAlign = align(options['bwa']['align'], options['bwa']['threads'], reference, seqFastq, outputDir)
-    seqSam = align2Sam('samse', reference, seq, seqAlign, outputDir)
-    seqBam = sam2Bam(reference, seqSam, options['samtools']['viewRegions'], outputDir)
-    seqBamSorted = sortBam(seqBam, options['samtools']['sort'], outputDir)
-    return seqBamSorted
-
-def mergeAndPileup(options, reference, sortedBams, outputDir):
-    bamAlign = mergeBamsAndIndex(sortedBams, outputDir)
-    return pileup(options['samtools']['pileup'], reference, bamAlign, outputDir)
-
-def sequentialPipeline(options, reference, sequences):
+def seqs2Bams(options):
+    reference = options['reference']
+    sequences = options['sequences']
     outputDir = options['dir']
-    mkOutputDir(outputDir)
-    referenceDatabase(options, reference)
     sortedBams = []
     for seq in sequences:
-        seqBamSorted = seq2Bam(options, reference, seq, outputDir)
+        seqFastq = illumina2FastQ(seq)
+        seqAlign = align(options['bwa']['align'], options['bwa']['threads'], reference, seqFastq, outputDir)
+        seqSam = align2Sam('samse', reference, seq, seqAlign, outputDir)
+        seqBam = sam2Bam(reference, seqSam, options['samtools']['viewRegions'], outputDir)
+        seqBamSorted = sortBam(seqBam, options['samtools']['sort'], outputDir)
         sortedBams.append(seqBamSorted)
-    pileupFile = mergeAndPileup(options, reference, sortedBams, outputDir)
-    maxReadDepth = options['samtools']['maxReadDepth']
-    varFilter('-p -D %d' % maxReadDepth, pileupFile, '.all.snps', outputDir)
-    varFilter('-D %d' % maxReadDepth, pileupFile, '.snps', outputDir)
+    return sortedBams
 
-def parallelPipeline(options, reference, sequences):
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    outputDir = None
-    if rank == 0:
-        with Timer('make ref database'):
-            outputDir = options['dir']
-            mkOutputDir(outputDir)
-            referenceDatabase(options, reference)
-    outputDir = comm.bcast(outputDir, root=0)
-    with Timer('seq2Bam, rank[%d]' % rank):
-        seqBamSorted = seq2Bam(options, reference, sequences[rank], outputDir)
-    sortedBams = comm.gather(seqBamSorted, root=0)
-    maxReadDepth = options['samtools']['maxReadDepth']
-    if rank == 0:
-        with Timer('merge and pileup'):
-            pileupFile = mergeAndPileup(options, reference, sortedBams, outputDir)
-            comm.send(pileupFile, dest=1)
-        with Timer('first var filter'):
-            varFilter('-p -D %d' % maxReadDepth, pileupFile, '.all.snps', outputDir)
-    elif rank == 1:
-        pileupFile = comm.recv(source=0)
-        with Timer('second var filter'):
-            varFilter('-D %d' % maxReadDepth, pileupFile, '.snps', outputDir)
-
-def main():
-    options = getOptions()
+def mergeAndPileup(options, sortedBams):
     reference = options['reference']
-    if not reference:
-        fail('One reference file must be specified')
-    sequences = options['sequences']
-    if len(sequences) == 0:
-        fail('At least one sequence file must be specified')
-    initLogger(options['logging'])
-    control = options['control']
-    if control == 'sequential':
-        sequentialPipeline(options, reference, sequences)
-    elif control == 'parallel':
-        parallelPipeline(options, reference, sequences)
-    else:
-        fail('unexepected control option %s. Expecting sequential or parallel.' % control)
-
-main()
+    outputDir = options['dir']
+    bamAlign = mergeBamsAndIndex(sortedBams, outputDir)
+    return pileup(options['samtools']['pileup'], reference, bamAlign, outputDir)

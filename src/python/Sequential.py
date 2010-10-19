@@ -1,10 +1,10 @@
 from Logger import initLogger
 from Pipeline import *
 from OutputDir import mkOutputDir
-from Options import getConfig 
+from Options import getConfig
 from sys import exit
 
-options = getConfig()
+options = getOptions()
 
 initLogger(options['logging'])
 reference = options['reference']
@@ -27,10 +27,10 @@ for seq in sequences:
    # Step 3. Convert sequence to fastq format.
    seqFastq = illumina2FastQ(seq)
    # Step 4. Align sequence to the reference database.
-   seqAlign = align(options['bwa']['align'], options['bwa']['threads'], dir, reference, seqFastq) 
+   seqAlign = align(options['bwa']['align'], options['bwa']['threads'], dir, reference, seqFastq)
    # Step 5. Convert alignment to SAM format.
    seqSam = align2Sam('samse', reference, seq, seqAlign)
-   # Step 6. Convert SAM to BAM. 
+   # Step 6. Convert SAM to BAM.
    seqBam = sam2Bam('-b', reference, seqSam)
    # Step 7. Sort the BAM file.
    seqBamSorted = sortBam(seqBam)
@@ -39,7 +39,7 @@ for seq in sequences:
 # Steps 8-10. Merge BAM files, and align the result.
 bamAlign = mergeBamsAndIndex(dir, sortedBams)
 
-# Step 11. Construct pileup file. 
+# Step 11. Construct pileup file.
 pileupFile = pileup(dir, '-c', reference, bamAlign)
 
 # Step 12-13. Run variation filter.

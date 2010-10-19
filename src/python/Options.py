@@ -23,7 +23,7 @@ defaultConfig = {
    'dir' : 'BWA'
 }
 
-def getConfig():
+def getOptions():
     if len(argv) <= 1:
         filename = 'ngs_pipeline.opt'
     else:
