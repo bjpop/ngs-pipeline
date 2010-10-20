@@ -38,13 +38,15 @@ def shellCommand(command):
     stdoutStr, stderrStr = process.communicate()
     return(stdoutStr, stderrStr, process.returncode)
 
-def runCommand(command, logger):
-    (stdoutStr, stderrStr, returncode) = shellCommand(command)
+def runStage(stageName, logger, options, *args):
+    command = getCommand(stageName, options)
+    commandStr = command(*args)
+    (stdoutStr, stderrStr, returncode) = shellCommand(commandStr)
     if returncode != 0:
         msg = ("Failed to run '%s'\n%s%sNon-zero exit status %s" %
-               (command, stdoutStr, stderrStr, returncode))
+               (commandStr, stdoutStr, stderrStr, returncode))
         logInfo(msg, logger)
-    logInfo(command, logger)
+    logInfo(commandStr, logger)
 
 def getCommand(name, options):
     funStr = options['stages'][name]['command']
