@@ -42,9 +42,13 @@ def runCommand(command, logger):
     (stdoutStr, stderrStr, returncode) = shellCommand(command)
     if returncode != 0:
         msg = ("Failed to run '%s'\n%s%sNon-zero exit status %s" %
-               (command, stdoutStr, stderrStr, process.returncode))
+               (command, stdoutStr, stderrStr, returncode))
         logInfo(msg, logger)
     logInfo(command, logger)
+
+def getCommand(name, options):
+    funStr = options['stages'][name]['command']
+    return eval(funStr)
 
 def logInfo(msg, logger):
     with logger['mutex']: logger['proxy'].info(msg)
@@ -54,27 +58,12 @@ def splitPath(path):
     (name, ext) = os.path.splitext(base)
     return (prefix, name, ext)
 
-defaultBWA = {
-   'align' : 'aln',
-   'index' : 'bwtsw',
-   'threads' : 1
-}
-
-defaultSamtools = {
-   'maxReadDepth' : 1000000,
-   'viewRegions' : [],
-   'sort' : '',
-   'pileup' : '-c'
-}
-
 defaultLogging = {
    'dir': 'log',
    'file': 'NGS_pipeline.log',
 }
 
 defaultConfig = {
-   'bwa' : defaultBWA,
-   'samtools' : defaultSamtools,
    'logging': defaultLogging,
    'dir' : 'BWA',
    'reference' : None,
