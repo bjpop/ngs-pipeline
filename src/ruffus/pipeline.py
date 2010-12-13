@@ -44,6 +44,7 @@ def indexReference(reference, output, logger):
     runStage('indexReference', logger, options, reference, output)
 
 # Convert illumiar data (.txt) to sanger format (.fastq) if necessary
+# XXX the input regex should only match .txt or .fastq.
 @transform(sequences, regex('(.*)\..*$'), r"\1.fastq", logger)
 def illToSanger(sequence, output, logger):
     if sequence.endswith('.txt'):
