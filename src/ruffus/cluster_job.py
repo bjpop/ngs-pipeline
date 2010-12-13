@@ -1,4 +1,4 @@
-from utils import shellCommand
+from shell_command import shellCommand
 import sys
 from time import sleep
 from tempfile import NamedTemporaryFile
@@ -18,12 +18,12 @@ def isJobCompleted(jobID):
 
 def waitForJobCompletion(jobID):
     while(not isJobCompleted(jobID)):
-        print "one moment please"
+        #print "one moment please"
         sleep(10)
 
 def runJobAndWait(script):
     #print jobScript
-    jobID = jobScript.launch()
+    jobID = script.launch()
     print jobID
     waitForJobCompletion(jobID)
 
@@ -41,6 +41,9 @@ class PBS_Script(object):
 
     def __str__(self):
         script = ['#!/bin/bash']
+        # XXX hack
+        script.append('#PBS -o log/%s' % self.name)
+        script.append('#PBS -e log/%s' % self.name)
         script.append('#PBS -q %s' % self.queue)
         if self.name:
             script.append('#PBS -N %s' % self.name)
@@ -70,5 +73,5 @@ class PBS_Script(object):
             raise(Exception('qsub command failed with exit status: ' + str(returnCode)))
 
 #waitForJobCompletion(jobID)
-jobScript = PBS_Script("sleep 50", "00:00:50", "sleepy", "1")
-runJobAndWait(jobScript)
+#jobScript = PBS_Script("sleep 50", "00:00:50", "sleepy", "1")
+#runJobAndWait(jobScript)

@@ -5,8 +5,14 @@ import subprocess
 from ruffus.proxy_logger import *
 import logging
 import os
+from shell_command import shellCommand
+from cluster_job import (PBS_Script, runJobAndWait)
 
 defaultOptionsFile = 'ngs_pipeline.opt'
+defaultWalltime = None
+defaultModules = []
+defaultQueue = 'batch'
+defaultMemInGB = None
 
 def mkDir(dir):
     if not os.path.exists(dir):
@@ -32,21 +38,30 @@ def initLog(options):
                                                 "NGS_pipeline", loggerArgs)
     return { 'proxy': proxy, 'mutex': mutex }
 
-def shellCommand(command):
-    process = subprocess.Popen(command, stdout = subprocess.PIPE,
-                                stderr = subprocess.PIPE, shell = True)
-    stdoutStr, stderrStr = process.communicate()
-    return(stdoutStr, stderrStr, process.returncode)
+def distributedCommand(stage, comm, options):
+    stageOptions = options['stages'][stage]
+    time = stageOptions.get('walltime', defaultWalltime)
+    mods = stageOptions.get('modules', defaultModules)
+    q = stageOptions.get('queue', defaultQueue)
+    mem = stageOptions.get('memInGB', defaultMemInGB)
+    jobScript = PBS_Script(command=comm, walltime=time, name=stage, memInGB=mem, queue=q, moduleList=mods)
+    print "running job:"
+    print jobScript
+    runJobAndWait(jobScript)
 
-def runStage(stageName, logger, options, *args):
-    command = getCommand(stageName, options)
+def runStage(stage, logger, options, *args):
+    command = getCommand(stage, options)
     commandStr = command(*args)
-    (stdoutStr, stderrStr, returncode) = shellCommand(commandStr)
-    if returncode != 0:
-        msg = ("Failed to run '%s'\n%s%sNon-zero exit status %s" %
-               (commandStr, stdoutStr, stderrStr, returncode))
-        logInfo(msg, logger)
-    logInfo(commandStr, logger)
+    if options['pipeline']['distributed']:
+        distributedCommand(stage, commandStr, options)
+    else:
+        (stdoutStr, stderrStr, returncode) = shellCommand(commandStr)
+        if returncode != 0:
+            msg = ("Failed to run '%s'\n%s%sNon-zero exit status %s" %
+                   (commandStr, stdoutStr, stderrStr, returncode))
+            logInfo(msg, logger)
+        logInfo(commandStr, logger)
+
 
 def getCommand(name, options):
     funStr = options['stages'][name]['command']
