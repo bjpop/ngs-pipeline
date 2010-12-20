@@ -28,6 +28,7 @@ from utils import (runStage, splitPath, getOptions, initLog, getCommand)
 options = getOptions()
 reference = options['reference']
 sequences = options['sequences']
+isPairedEnd = options['paired']
 # Start the logging process.
 logger = initLog(options)
 
@@ -45,7 +46,7 @@ def indexReference(reference, output, logger):
 
 # Convert illumiar data (.txt) to sanger format (.fastq) if necessary
 # XXX the input regex should only match .txt or .fastq.
-@transform(sequences, regex('(.*)\..*$'), r"\1.fastq", logger)
+@transform(sequences, regex('(.*)\..*$'), r'\1.fastq', logger)
 def illToSanger(sequence, output, logger):
     if sequence.endswith('.txt'):
         runStage('illToSanger', logger, options, sequence, output)
@@ -56,10 +57,26 @@ def illToSanger(sequence, output, logger):
 def alignSequence(sequence, output, logger):
     runStage('alignSequence', logger, options, reference, sequence, output)
 
+if isPairedEnd:
+   input = r'(.+)_1\.sai'
+   extraInputs = [r'\1_2.sai', r'\1_1.fastq', r'\1_2.fastq']
+else:
+   input = r'(.+)\.sai'
+   extraInputs = [r'\1.fastq']
+
 # Convert alignments to SAM format.
-@transform(alignSequence, suffix('.sai'), '.sam', '.fastq', logger)
-def alignToSam(alignment, output, sequence, logger):
-    runStage('alignToSam', logger, options, reference, alignment, sequence, output)
+@transform(alignSequence, regex(input), add_inputs(extraInputs), r'\1.sam', logger)
+def alignToSam(inputs, output, logger):
+    if isPairedEnd:
+        align1, [align2, seq1, seq2] = inputs
+        runStage('alignToSamPE', logger, options, reference, align2, align2, seq1, seq2, output)
+    else:
+        align, seq = inputs
+        runStage('alignToSamSE', logger, options, reference, align, seq, output)
+
+#@transform(alignSequence, suffix('.sai'), '.sam', '.fastq', logger)
+#def alignToSam(alignment, output, sequence, logger):
+#    runStage('alignToSam', logger, options, reference, alignment, sequence, output)
 
 # Convert SAM alignments to BAM format.
 @transform(alignToSam, suffix('.sam'), '.bam', logger)
