@@ -1,3 +1,5 @@
+#!/bin/env python
+
 '''
 Next generation sequencing pipeline.
 
@@ -21,6 +23,7 @@ including the actual commands which are run at each stage.
 
 from ruffus import *
 import os.path
+import shutil
 from utils import (runStage, splitPath, getOptions, initLog, getCommand)
 
 # Read the configuation options from file, determine the reference file
@@ -94,8 +97,11 @@ def sortBam(bamFile, output, logger):
 # Merge all the sorted BAM alignments.
 @collate(sortBam, regex(r"(.*/|^).*.bam"), r"\1/all_reads_aligned.sorted.bam", logger)
 def mergeBams(sortedBams, output, logger):
-    bams = ' '.join(sortedBams)
-    runStage('mergeBams', logger, options, bams, output)
+    if len(sortedBams) == 1:
+        shutil.copyfile(sortedBams[0], output)
+    else: 
+        bams = ' '.join(sortedBams)
+        runStage('mergeBams', logger, options, bams, output)
 
 # Index sorted (merged) BAM alignment for fast access.
 @transform(mergeBams, suffix('.bam'), '.bam.bai', logger)
