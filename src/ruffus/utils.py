@@ -34,8 +34,7 @@ def initLog(options):
     loggerArgs["backupCount"]=10
     loggerArgs["formatter"]="%(asctime)s - %(message)s"
 
-    (proxy, mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
-                                                "NGS_pipeline", loggerArgs)
+    (proxy, mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, "NGS_pipeline", loggerArgs)
     return { 'proxy': proxy, 'mutex': mutex }
 
 def distributedCommand(stage, comm, options):
@@ -60,7 +59,7 @@ def runStage(stage, logger, options, *args):
             msg = ("Failed to run '%s'\n%s%sNon-zero exit status %s" %
                    (commandStr, stdoutStr, stderrStr, returncode))
             logInfo(msg, logger)
-        logInfo(commandStr, logger)
+    logInfo(stage + ': ' + commandStr, logger)
 
 
 def getCommand(name, options):
