@@ -132,7 +132,8 @@ pipeline = [variationAll, variation]
 pipelineOptions = options['pipeline']
 if pipelineOptions['style'] == 'run':
     # Perform the pipeline steps.
-    pipeline_run(pipeline, multiprocess = pipelineOptions['procs'], logger = logger['proxy'])
+    # pipeline_run(pipeline, multiprocess = pipelineOptions['procs'], logger = logger['proxy'])
+    pipeline_run(pipeline, multiprocess = pipelineOptions['procs'], logger = black_hole_logger)
 elif pipelineOptions['style'] == 'flowchart':
     # Draw the pipeline as a diagram.
     pipeline_printout_graph ('flowchart.svg', 'svg', pipeline, no_key_legend = False)
