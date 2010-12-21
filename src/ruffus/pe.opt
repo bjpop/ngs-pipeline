@@ -3,9 +3,7 @@ logging:
    dir: log
 reference: /vlsci/VLSCI/bjpop/scratch/references/AllChromosomes.fa
 paired: True
-sequences:
-   - /vlsci/VLSCI/bjpop/scratch/sequences/pe/out_1.fastq
-   - /vlsci/VLSCI/bjpop/scratch/sequences/pe/out_2.fastq
+sequences: /vlsci/VLSCI/bjpop/scratch/sequences/pe/*.fastq
 pipeline:
    style: run
    procs: 4
