@@ -18,13 +18,12 @@ def isJobCompleted(jobID):
 
 def waitForJobCompletion(jobID):
     while(not isJobCompleted(jobID)):
-        #print "one moment please"
         sleep(10)
 
 def runJobAndWait(script):
     #print jobScript
     jobID = script.launch()
-    print jobID
+    #print jobID
     waitForJobCompletion(jobID)
 
 class PBS_Script(object):
