@@ -2,8 +2,8 @@ logging:
    file: pipeline.log
    dir: log
 reference: /vlsci/VLSCI/bjpop/scratch/references/AllChromosomes.fa
-paired: False
-sequences: /vlsci/VLSCI/bjpop/scratch/sequences/small/*.fastq
+paired: True
+sequences: /vlsci/VLSCI/bjpop/scratch/Files_for_Bernie/*.fastq
 pipeline:
    style: run
    procs: 4
