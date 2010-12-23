@@ -83,7 +83,7 @@ def distributedCommand(stage, comm, options):
     queue = getStageOptions(options, stage, 'queue')
     mem = getStageOptions(options, stage, 'memInGB')
     script = PBS_Script(command=comm, walltime=time, name=stage, memInGB=mem, queue=queue, moduleList=mods)
-    print script
+    #print script
     runJobAndWait(script)
 
 def runStage(stage, logger, options, *args):
