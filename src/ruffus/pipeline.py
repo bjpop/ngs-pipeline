@@ -31,7 +31,7 @@ from utils import (runStage, splitPath, getOptions, initLog, getCommand)
 options = getOptions()
 reference = options['reference']
 sequences = options['sequences']
-isPairedEnd = options['paired']
+isPairedEnd = options['pipeline']['paired']
 # Start the logging process.
 logger = initLog(options)
 
