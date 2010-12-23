@@ -51,6 +51,7 @@ def distributedCommand(stage, comm, options):
 def runStage(stage, logger, options, *args):
     command = getCommand(stage, options)
     commandStr = command(*args)
+    logInfo(stage + ': ' + commandStr, logger)
     if options['pipeline']['distributed']:
         distributedCommand(stage, commandStr, options)
     else:
@@ -59,7 +60,6 @@ def runStage(stage, logger, options, *args):
             msg = ("Failed to run '%s'\n%s%sNon-zero exit status %s" %
                    (commandStr, stdoutStr, stderrStr, returncode))
             logInfo(msg, logger)
-    logInfo(stage + ': ' + commandStr, logger)
 
 
 def getCommand(name, options):
@@ -81,10 +81,10 @@ defaultLogging = {
 
 defaultConfig = {
    'logging': defaultLogging,
-   'dir' : 'BWA',
+#   'dir' : 'BWA',
    'reference' : None,
    'sequences' : [],
-   'control' : 'sequential',
+#   'control' : 'sequential',
    'optionsFile' : defaultOptionsFile
 }
 
