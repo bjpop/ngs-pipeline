@@ -74,7 +74,7 @@ def alignToSam(inputs, output, logger):
         align1, [align2, seq1, seq2] = inputs
         runStage('alignToSamPE', logger, options, reference, align2, align2, seq1, seq2, output)
     else:
-        align, seq = inputs
+        align, [seq] = inputs
         runStage('alignToSamSE', logger, options, reference, align, seq, output)
 
 #@transform(alignSequence, suffix('.sai'), '.sam', '.fastq', logger)
