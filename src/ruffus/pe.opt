@@ -1,88 +1,44 @@
-logging:
-   file: pipeline.log
-   dir: log
 reference: /vlsci/VLSCI/bjpop/scratch/references/AllChromosomes.fa
-paired: True
 sequences: /vlsci/VLSCI/bjpop/scratch/sequences/pe/*.fastq
 pipeline:
+   logDir: log
+   logFile: pipeline.log
    style: run
    procs: 4
+   paired: False
+stageDefaults:
    distributed: True
+   walltime: "02:00:00"
+   memInGB: 10
+   modules:
+      - "bwa-gcc"
+      - "samtools-gcc/0.1.8"
+      - "maq-gcc"
 stages:
    mkRefDataBase:
       command: "lambda ref, out: 'bwa index %s -a bwtsw' % ref"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "bwa-gcc"
    indexReference:
       command: "lambda ref, out: 'samtools faidx %s' % ref"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules: "samtools-gcc/0.1.8"
    illToSanger:
       command: "lambda ill, out: 'maq ill2sanger %s %s' % (ill, out)"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "maq-gcc"
    alignSequence:
       command: "lambda ref, seq, out: 'bwa aln -t 8 %s %s > %s' % (ref, seq, out)"
-      walltime: "06:00:00"
       queue: smp
-      modules:
-         - "bwa-gcc"
    alignToSamSE:
       command: "lambda ref, align, seq, out: 'bwa samse %s %s %s > %s' % (ref, align, seq, out)"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "bwa-gcc"
    alignToSamPE:
       command: "lambda ref, align1, align2, seq1, seq2, out: 'bwa sampe %s %s %s %s %s > %s' % (ref, align1, align2, seq1, seq2, out)"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "bwa-gcc"
    samToBam:
       command: "lambda indexedRef, sam, out: 'samtools view -b -t %s -o %s %s' % (indexedRef, out, sam)"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "samtools-gcc/0.1.8"
    sortBam:
       command: "lambda bam, out: 'samtools sort %s %s' % (bam, out)"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "samtools-gcc/0.1.8"
    mergeBams:
       command: "lambda bams, out: 'samtools merge %s %s' % (out, bams)"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "samtools-gcc/0.1.8"
    indexMergedBams:
       command: "lambda bam, out: 'samtools index %s' % bam"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "samtools-gcc/0.1.8"
    pileup:
       command: "lambda ref, bamAlign, out: 'samtools pileup -c -f %s %s > %s' % (ref, bamAlign, out)"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "samtools-gcc/0.1.8"
    variationAll:
       command: "lambda pileup, out: 'samtools.pl varFilter -p -D 1000000 %s &> %s' % (pileup, out)"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "samtools-gcc/0.1.8"
    variation:
       command: "lambda pileup, out: 'samtools.pl varFilter -D 1000000 %s &> %s' % (pileup, out)"
-      walltime: "02:00:00"
-      memInGB: 10
-      modules:
-         - "samtools-gcc/0.1.8"
