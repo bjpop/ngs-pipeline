@@ -7,6 +7,7 @@ import logging
 import os
 from shell_command import shellCommand
 from cluster_job import (PBS_Script, runJobAndWait)
+import re
 
 defaultOptionsFile = 'ngs_pipeline.opt'
 defaultWalltime = None # use the default walltime of the scheduler
@@ -73,17 +74,12 @@ def getStageOptions(options, stage, optionName):
         return options['stageDefaults'][optionName]
 
 def distributedCommand(stage, comm, options):
-    #stageOptions = options['stages'][stage]
-    #time = stageOptions.get('walltime', defaultWalltime)
-    #mods = stageOptions.get('modules', defaultModules)
-    #queue = stageOptions.get('queue', defaultQueue)
-    #mem = stageOptions.get('memInGB', defaultMemInGB)
     time = getStageOptions(options, stage, 'walltime')
     mods = getStageOptions(options, stage, 'modules')
     queue = getStageOptions(options, stage, 'queue')
     mem = getStageOptions(options, stage, 'memInGB')
-    script = PBS_Script(command=comm, walltime=time, name=stage, memInGB=mem, queue=queue, moduleList=mods)
-    #print script
+    logDir = options['pipeline']['logDir']
+    script = PBS_Script(command=comm, walltime=time, name=stage, memInGB=mem, queue=queue, moduleList=mods, logDir=logDir)
     runJobAndWait(script)
 
 def runStage(stage, logger, options, *args):
@@ -99,11 +95,23 @@ def runStage(stage, logger, options, *args):
                    (commandStr, stdoutStr, stderrStr, returncode))
             logInfo(msg, logger)
 
+# This converts a short-hand command string, such as:
+#   'bwa aln -t 8 %ref %seq > %out'
+# into:
+#   'lambda x1, x2, x3: "bwa aln -t 8 %s %s > %s" % (x1, x2, x3)'
+def commandToLambda(command):
+    (expanded,numPats) = re.subn('%[^ ]*', '%s', command)
+    args = []
+    for n in range(numPats):
+        args.append("x" + str(n))
+    argsTuple = str(','.join(args))
+    #lambdaStr = 'lambda ' + argsTuple + ':' + '"' + expanded + '"' + ' % ' + '(' + argsTuple  
+    return 'lambda %s : "%s" %% (%s)' % (argsTuple, expanded, argsTuple)
 
 def getCommand(name, options):
     try:
-        funStr = options['stages'][name]['command']
-        return eval(funStr)
+        commandStr = getStageOptions(options,name,'command') 
+        return eval(commandToLambda(commandStr))
     except KeyError:
         fail("command: %s, is not defined in the options file" % name)
 

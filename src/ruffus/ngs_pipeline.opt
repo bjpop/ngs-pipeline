@@ -1,11 +1,11 @@
-reference: /vlsci/VLSCI/bjpop/scratch/references/AllChromosomes.fa
-sequences: /vlsci/VLSCI/bjpop/scratch/sequences/small/*.fastq
+reference: /vlsci/VLSCI/bjpop/scratch/references/human_g1k_v37.fasta
+sequences: /vlsci/VLSCI/bjpop/scratch/Files_for_Bernie/*.fastq
 pipeline:
    logDir: log
    logFile: pipeline.log
    style: run
    procs: 4
-   paired: False
+   paired: True
 stageDefaults:
    distributed: True
    walltime: "02:00:00"
@@ -14,32 +14,38 @@ stageDefaults:
       - "bwa-gcc"
       - "samtools-gcc/0.1.8"
       - "maq-gcc"
+      - "gatk/1.0.4418"
 stages:
    mkRefDataBase:
-      command: "lambda ref, out: 'bwa index %s -a bwtsw' % ref"
+      command: "bwa index %ref -a bwtsw"
    indexReference:
-      command: "lambda ref, out: 'samtools faidx %s' % ref"
+      command: "samtools faidx %ref"
    illToSanger:
-      command: "lambda ill, out: 'maq ill2sanger %s %s' % (ill, out)"
+      command: "maq ill2sanger %ill %out"
    alignSequence:
-      command: "lambda ref, seq, out: 'bwa aln -t 8 %s %s > %s' % (ref, seq, out)"
+      command: "bwa aln -t 8 %ref %seq > %out"
       walltime: "06:00:00"
       queue: smp
    alignToSamSE:
-      command: "lambda ref, align, seq, out: 'bwa samse %s %s %s > %s' % (ref, align, seq, out)"
+      command: "bwa samse %ref %align %seq > %out"
    alignToSamPE:
-      command: "lambda ref, align1, align2, seq1, seq2, out: 'bwa sampe %s %s %s %s %s > %s' % (ref, align1, align2, seq1, seq2, out)"
+      command: "bwa sampe %ref %align1 %align2 %seq1 %seq2 > %out"
    samToBam:
-      command: "lambda indexedRef, sam, out: 'samtools view -b -t %s -o %s %s' % (indexedRef, out, sam)"
+      command: "samtools view -b -t %indexedRef -o %out %sam"
    sortBam:
-      command: "lambda bam, out: 'samtools sort %s %s' % (bam, out)"
+      command: "samtools sort %bam %out"
    mergeBams:
-      command: "lambda bams, out: 'samtools merge %s %s' % (out, bams)"
+      command: "samtools merge %out %bams"
    indexMergedBams:
-      command: "lambda bam, out: 'samtools index %s' % bam"
+      command: "samtools index %bam"
    pileup:
-      command: "lambda ref, bamAlign, out: 'samtools pileup -c -f %s %s > %s' % (ref, bamAlign, out)"
+      command: "samtools pileup -c -f %ref %bamAlign > %out"
    variationAll:
-      command: "lambda pileup, out: 'samtools.pl varFilter -p -D 1000000 %s &> %s' % (pileup, out)"
+      command: "samtools.pl varFilter -p -D 1000000 %pileup &> %out"
    variation:
-      command: "lambda pileup, out: 'samtools.pl varFilter -D 1000000 %s &> %s' % (pileup, out)"
+      command: "samtools.pl varFilter -D 1000000 %pileup &> %out"
+   realignIntervals:
+      memInGB: 16
+      command: "./GenomeAnalysisTK -T RealignerTargetCreator -R %ref -I %bam -o %out"
+   realign:
+      command: "./GenomeAnalysisTK -T IndelRealigner -I %bam -R %ref -targetIntervals %intervals -o %out -compress 0"

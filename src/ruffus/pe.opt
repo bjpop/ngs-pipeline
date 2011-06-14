@@ -1,11 +1,11 @@
-reference: /vlsci/VLSCI/bjpop/scratch/references/AllChromosomes.fa
+reference: /vlsci/VLSCI/bjpop/scratch/references/human_g1k_v37.fasta
 sequences: /vlsci/VLSCI/bjpop/scratch/sequences/pe/*.fastq
 pipeline:
    logDir: log
    logFile: pipeline.log
-   style: run
+   style: flowchart
    procs: 4
-   paired: False
+   paired: True
 stageDefaults:
    distributed: True
    walltime: "02:00:00"
@@ -14,6 +14,7 @@ stageDefaults:
       - "bwa-gcc"
       - "samtools-gcc/0.1.8"
       - "maq-gcc"
+      - "gatk/1.0.4418"
 stages:
    mkRefDataBase:
       command: "lambda ref, out: 'bwa index %s -a bwtsw' % ref"
@@ -42,3 +43,6 @@ stages:
       command: "lambda pileup, out: 'samtools.pl varFilter -p -D 1000000 %s &> %s' % (pileup, out)"
    variation:
       command: "lambda pileup, out: 'samtools.pl varFilter -D 1000000 %s &> %s' % (pileup, out)"
+   realignIntervals:
+      memInGB: 16
+      command: "lambda ref, bam, out: './GenomeAnalysisTK -T RealignerTargetCreator -R %s -I %s -o %s' % (ref, bam,out)"

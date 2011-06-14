@@ -27,7 +27,7 @@ def runJobAndWait(script):
     waitForJobCompletion(jobID)
 
 class PBS_Script(object):
-    def __init__(self, command, walltime=None, name=None, memInGB=None, queue='batch', moduleList=None):
+    def __init__(self, command, walltime=None, name=None, memInGB=None, queue='batch', moduleList=None, logDir=None):
         self.command = command
         if queue in ['batch', 'smp']:
             self.queue = queue
@@ -37,13 +37,17 @@ class PBS_Script(object):
         self.memInGB = memInGB
         self.walltime = walltime
         self.moduleList = moduleList
+        self.logDir = logDir
 
     def __str__(self):
         script = ['#!/bin/bash']
-        # XXX hack
-        script.append('#PBS -o log/%s' % self.name)
-        script.append('#PBS -e log/%s' % self.name)
+        # XXX fixme 
+        # should include job id in the output name.
+        # should use the proper log directory.
         script.append('#PBS -q %s' % self.queue)
+        if self.logDir:
+           script.append('#PBS -o %s' % self.logDir)
+           script.append('#PBS -e %s' % self.logDir)
         if self.name:
             script.append('#PBS -N %s' % self.name)
         if self.memInGB:
@@ -70,7 +74,3 @@ class PBS_Script(object):
             return stdout
         else:
             raise(Exception('qsub command failed with exit status: ' + str(returnCode)))
-
-#waitForJobCompletion(jobID)
-#jobScript = PBS_Script("sleep 50", "00:00:50", "sleepy", "1")
-#runJobAndWait(jobScript)

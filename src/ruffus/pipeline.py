@@ -108,6 +108,24 @@ def mergeBams(sortedBams, output, logger):
 def indexMergedBams(mergedBamsFile, output, logger):
     runStage('indexMergedBams', logger, options, mergedBamsFile, output)
 
+# Determine (small) suspicious intervals which are likely in need of realignment
+# my $COMM = "GenomeAnalysisTK -T RealignerTargetCreator -I $bamfile -R $ref -o $intervals"
+@follows(indexMergedBams) # I assume this has to wait until the bam is indexed.
+@transform(mergeBams, suffix('.bam'), '.realigner.intervals', logger)
+def realignIntervals(mergedBamsFile, output, logger):
+   runStage('realignIntervals', logger, options, reference, mergedBamsFile, output)
+
+# Run the realigner over the intervals
+# XXX not here.
+# can do transform with add_inputs I suspect to get the bam file and the intervals file
+# $COMM = "GenomeAnalysisTK -T IndelRealigner -I $bamfile -R $ref -targetIntervals $intervals -o $realignedbam -compress 0"
+@transform(realignIntervals, suffix('.realigner.intervals'), add_inputs(mergeBams), '.GATKrealigned_prematefixing.bam', logger)
+#def realign(intervals, mergedBamsFile, output, logger):
+def realign(inputs, output, logger):
+   print inputs
+   intervals, mergedBamsFile = inputs
+   runStage('realign', logger, options, reference, mergedBamsFile, intervals, output)
+
 # Convert (sorted merged) BAM alignment to pileup format.
 @transform(indexMergedBams, suffix('.bam.bai'), '.pileup', logger)
 def pileup(baiFile, output, logger):
@@ -126,7 +144,7 @@ def variation(pileupFile, output, logger):
     runStage('variation', logger, options, pileupFile, output)
 
 # Define the end-points of the pipeline.
-pipeline = [variationAll, variation]
+pipeline = [variationAll, variation, realign]
 
 # Invoke the pipeline.
 pipelineOptions = options['pipeline']
